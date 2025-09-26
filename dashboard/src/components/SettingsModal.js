@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { X, GitBranch, Trash2, AlertTriangle, Settings } from 'lucide-react';
+import { X, GitBranch, Trash2, AlertTriangle, Settings, ChevronDown } from 'lucide-react';
 
-const SettingsModal = ({ isOpen, onClose, repositories, onRepositoryDelete }) => {
+const SettingsModal = ({ isOpen, onClose, repositories, onRepositoryDelete, selectedRepository, onRepositoryChange }) => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [repositoryToDelete, setRepositoryToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -54,7 +54,45 @@ const SettingsModal = ({ isOpen, onClose, repositories, onRepositoryDelete }) =>
 
           {/* Content */}
           <div className="p-6">
-            {/* Seção de Repositórios */}
+            {/* Seção de Seleção de Repositório */}
+            <div className="mb-8">
+              <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                <GitBranch className="w-5 h-5 mr-2" />
+                Selecionar Repositório
+              </h3>
+              
+              <div className="bg-gray-50 rounded-lg p-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Repositório Ativo
+                </label>
+                <div className="relative">
+                  <select
+                    value={selectedRepository || ''}
+                    onChange={(e) => onRepositoryChange(e.target.value || null)}
+                    className="appearance-none bg-white border border-gray-300 rounded-md px-3 py-2 pr-8 w-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  >
+                    <option value="">Todos os repositórios</option>
+                    {repositories.map((repo) => (
+                      <option key={repo.id} value={repo.id}>
+                        {repo.full_name}
+                      </option>
+                    ))}
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
+                    <ChevronDown className="h-4 w-4 text-gray-400" />
+                  </div>
+                </div>
+                
+                {repositories.length === 0 && (
+                  <div className="mt-3 text-sm text-gray-500 flex items-center">
+                    <GitBranch className="w-4 h-4 mr-2" />
+                    Nenhum repositório encontrado. Configure um webhook para começar.
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Seção de Gerenciamento de Repositórios */}
             <div className="mb-8">
               <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center">
                 <GitBranch className="w-5 h-5 mr-2" />
@@ -133,20 +171,22 @@ const SettingsModal = ({ isOpen, onClose, repositories, onRepositoryDelete }) =>
               </h3>
             </div>
             
-            <p className="text-gray-600 mb-6">
-              Tem certeza que deseja remover o repositório <strong>{repositoryToDelete.full_name}</strong>?
-              <br /><br />
-              <span className="text-red-600 font-medium">
+            <div className="text-gray-600 mb-6">
+              <p>
+                Tem certeza que deseja remover o repositório <strong>{repositoryToDelete.full_name}</strong>?
+              </p>
+              <br />
+              <p className="text-red-600 font-medium">
                 Esta ação irá remover permanentemente:
-              </span>
+              </p>
               <ul className="list-disc list-inside mt-2 text-sm text-gray-600">
                 <li>O repositório</li>
                 <li>Todos os eventos associados</li>
                 <li>Todos os dados históricos</li>
               </ul>
               <br />
-              <span className="text-red-600 font-medium">Esta ação não pode ser desfeita!</span>
-            </p>
+              <p className="text-red-600 font-medium">Esta ação não pode ser desfeita!</p>
+            </div>
             
             <div className="flex justify-end space-x-3">
               <button

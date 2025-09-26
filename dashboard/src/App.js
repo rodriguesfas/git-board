@@ -4,7 +4,6 @@ import Timeline from './components/Timeline';
 import StatsCards from './components/StatsCards';
 import UserStats from './components/UserStats';
 import EventTypeChart from './components/EventTypeChart';
-import RepositorySelector from './components/RepositorySelector';
 import SettingsModal from './components/SettingsModal';
 import { useTimeline, useStats, useUserStats, useEventStats, useRepositories } from './hooks/useApi';
 import Tooltip, { useTooltips } from './components/Tooltip';
@@ -80,7 +79,14 @@ function App() {
               <Github className="w-8 h-8 text-gray-800" />
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Git Board</h1>
-                <p className="text-sm text-gray-600">GitHub Webhook Dashboard</p>
+                <p className="text-sm text-gray-600">
+                  GitHub Webhook Dashboard
+                  {selectedRepository && (
+                    <span className="ml-2 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                      {repositories.find(r => r.id === selectedRepository)?.full_name || 'Repositório selecionado'}
+                    </span>
+                  )}
+                </p>
               </div>
             </div>
             
@@ -111,16 +117,6 @@ function App() {
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Repository Selector */}
-        <div className="mb-6">
-          <RepositorySelector
-            repositories={repositories}
-            selectedRepository={selectedRepository}
-            onRepositoryChange={handleRepositoryChange}
-            loading={reposLoading}
-          />
-        </div>
-
         {/* Stats Cards */}
         <div className="mb-8">
           <StatsCards stats={stats} repositories={repositories} loading={statsLoading} />
@@ -181,6 +177,8 @@ function App() {
         onClose={() => setShowSettingsModal(false)}
         repositories={repositories}
         onRepositoryDelete={handleRepositoryDelete}
+        selectedRepository={selectedRepository}
+        onRepositoryChange={handleRepositoryChange}
       />
     </div>
   );
