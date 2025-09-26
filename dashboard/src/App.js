@@ -8,7 +8,7 @@ import SettingsModal from './components/SettingsModal';
 import AdvancedFilters from './components/AdvancedFilters';
 import ActivityChart from './components/ActivityChart';
 import NotificationSystem from './components/NotificationSystem';
-import HealthCheck from './components/HealthCheck';
+import HealthCheck, { HealthCheckIcon, useHealthCheck } from './components/HealthCheck';
 import ReportsInsights from './components/ReportsInsights';
 import KeyboardShortcuts, { useKeyboardShortcuts } from './components/KeyboardShortcuts';
 import CompactMode, { useCompactMode, CompactWrapper } from './components/CompactMode';
@@ -25,9 +25,11 @@ function App() {
   const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
   const [showKeyboardShortcuts, setShowKeyboardShortcuts] = useState(false);
+  const [showHealthCheck, setShowHealthCheck] = useState(false);
   const [currentView, setCurrentView] = useState('dashboard'); // dashboard, timeline, reports
   const tooltips = useTooltips();
   const { isCompact, toggleCompactMode } = useCompactMode();
+  const { healthStatus, isChecking, performHealthCheck } = useHealthCheck();
 
   // Hooks para buscar dados
   const { repositories, loading: reposLoading, refetch: refetchRepos } = useRepositories();
@@ -158,6 +160,11 @@ function App() {
                 onNotificationSettings={() => setShowSettingsModal(true)}
               />
               
+              <HealthCheckIcon
+                healthStatus={healthStatus}
+                onClick={() => setShowHealthCheck(true)}
+              />
+              
               <Tooltip content="Atalhos de teclado (Ctrl+H)" position="bottom">
                 <button
                   onClick={() => setShowKeyboardShortcuts(true)}
@@ -216,10 +223,6 @@ function App() {
                 <StatsCards stats={stats} repositories={repositories} loading={statsLoading} />
               </div>
 
-              {/* Health Check */}
-              <div className="mb-8">
-                <HealthCheck />
-              </div>
 
               {/* Charts and Stats */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
@@ -305,6 +308,15 @@ function App() {
       <KeyboardShortcuts
         isOpen={showKeyboardShortcuts}
         onClose={() => setShowKeyboardShortcuts(false)}
+      />
+
+      {/* Modal de Health Check */}
+      <HealthCheck
+        isOpen={showHealthCheck}
+        onClose={() => setShowHealthCheck(false)}
+        healthStatus={healthStatus}
+        isChecking={isChecking}
+        performHealthCheck={performHealthCheck}
       />
     </div>
   );
