@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { RefreshCw, Settings, Github, Keyboard } from 'lucide-react';
 import Timeline from './components/Timeline';
 import StatsCards from './components/StatsCards';
@@ -37,7 +37,23 @@ function App() {
   const { eventStats, loading: eventStatsLoading, refetch: refetchEventStats } = useEventStats(selectedRepository);
   
   // Hook para filtros
-  const { filteredEvents, updateFilters } = useFilters(timeline);
+  const { filteredEvents, updateFilters: updateFiltersRaw } = useFilters(timeline);
+  
+  // Memoizar a função updateFilters para evitar loops infinitos
+  const updateFilters = useCallback((newFilters) => {
+    updateFiltersRaw(newFilters);
+  }, [updateFiltersRaw]);
+  
+  // Função para atualizar todos os dados
+  const refreshAll = () => {
+    console.log('Atualizando dados...');
+    setLastRefreshTime(new Date());
+    refetchRepos();
+    refetchTimeline();
+    refetchStats();
+    refetchUserStats();
+    refetchEventStats();
+  };
   
   // Hook para atalhos de teclado
   useKeyboardShortcuts({
@@ -54,17 +70,6 @@ function App() {
     timeline: () => setCurrentView('timeline'),
     reports: () => setCurrentView('reports')
   });
-
-  // Função para atualizar todos os dados
-  const refreshAll = () => {
-    console.log('Atualizando dados...');
-    setLastRefreshTime(new Date());
-    refetchRepos();
-    refetchTimeline();
-    refetchStats();
-    refetchUserStats();
-    refetchEventStats();
-  };
 
   // Auto-refresh a cada 30 segundos
   useEffect(() => {
@@ -133,13 +138,15 @@ function App() {
                 </button>
               </Tooltip>
               
-              <AdvancedFilters
-                events={timeline}
-                repositories={repositories}
-                onFiltersChange={updateFilters}
-                isOpen={showFilters}
-                onToggle={() => setShowFilters(!showFilters)}
-              />
+              <div className="relative">
+                <AdvancedFilters
+                  events={timeline}
+                  repositories={repositories}
+                  onFiltersChange={updateFilters}
+                  isOpen={showFilters}
+                  onToggle={() => setShowFilters(!showFilters)}
+                />
+              </div>
               
               <CompactMode
                 isCompact={isCompact}

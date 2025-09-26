@@ -4,6 +4,7 @@ import { Bell, X, Settings, CheckCircle, AlertTriangle, Info, XCircle } from 'lu
 const NotificationSystem = ({ events = [], onNotificationSettings }) => {
   const [notifications, setNotifications] = useState([]);
   const [isEnabled, setIsEnabled] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [settings, setSettings] = useState({
     push: true,
     email: false,
@@ -27,6 +28,18 @@ const NotificationSystem = ({ events = [], onNotificationSettings }) => {
       setIsEnabled(Notification.permission === 'granted');
     }
   }, []);
+
+  // Fechar dropdown ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isDropdownOpen && !event.target.closest('.notification-dropdown')) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isDropdownOpen]);
 
   // Solicitar permissão para notificações
   const requestPermission = useCallback(async () => {
@@ -196,23 +209,137 @@ const NotificationSystem = ({ events = [], onNotificationSettings }) => {
   const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
-    <div className="relative">
+    <div className="relative notification-dropdown">
       {/* Botão de notificações */}
       <button
-        onClick={requestPermission}
-        className="relative p-2 text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-full"
+        onClick={() => {
+          if (!isEnabled) {
+            requestPermission();
+          } else {
+            setIsDropdownOpen(!isDropdownOpen);
+          }
+        }}
+        className="relative inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
         title="Notificações"
       >
-        <Bell className="w-6 h-6" />
+        <Bell className="w-4 h-4 mr-2" />
+        Notificações
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
+          <span className="ml-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
       </button>
 
-      {/* Status das notificações */}
-      {!isEnabled && (
+      {/* Dropdown de notificações */}
+      {isDropdownOpen && (
+        <div className="absolute top-full right-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-xl z-50 max-h-96 overflow-hidden animate-in slide-in-from-top-2 duration-200">
+          {/* Header do dropdown */}
+          <div className="p-4 border-b border-gray-200 bg-gray-50">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Notificações
+                {unreadCount > 0 && (
+                  <span className="ml-2 inline-flex items-center justify-center px-2 py-0.5 text-xs font-bold leading-none text-white bg-red-600 rounded-full">
+                    {unreadCount}
+                  </span>
+                )}
+              </h3>
+              <div className="flex items-center space-x-2">
+                {notifications.length > 0 && (
+                  <>
+                    <button
+                      onClick={markAllAsRead}
+                      className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                    >
+                      Marcar todas como lidas
+                    </button>
+                    <button
+                      onClick={clearNotifications}
+                      className="text-xs text-gray-500 hover:text-gray-700 font-medium"
+                    >
+                      Limpar
+                    </button>
+                  </>
+                )}
+                <button
+                  onClick={() => {
+                    onNotificationSettings && onNotificationSettings(settings);
+                    setIsDropdownOpen(false);
+                  }}
+                  className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-200"
+                >
+                  <Settings className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={() => setIsDropdownOpen(false)}
+                  className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-200"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Conteúdo do dropdown */}
+          <div className="max-h-80 overflow-y-auto">
+            {notifications.length === 0 ? (
+              <div className="p-6 text-center">
+                <Bell className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                <p className="text-sm text-gray-500">Nenhuma notificação</p>
+                <p className="text-xs text-gray-400 mt-1">
+                  Você será notificado sobre eventos importantes
+                </p>
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-100">
+                {notifications.slice(0, 10).map((notification) => (
+                  <div
+                    key={notification.id}
+                    className={`p-4 hover:bg-gray-50 cursor-pointer transition-colors ${
+                      !notification.read ? 'bg-blue-50 border-l-4 border-l-blue-500' : ''
+                    }`}
+                    onClick={() => markAsRead(notification.id)}
+                  >
+                    <div className="flex items-start">
+                      <div className="flex-shrink-0 mr-3">
+                        {getNotificationIcon(notification.type)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900">
+                          {notification.title}
+                        </p>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {notification.message}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {notification.timestamp.toLocaleTimeString('pt-BR')}
+                        </p>
+                      </div>
+                      {!notification.read && (
+                        <div className="flex-shrink-0 ml-2">
+                          <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {notifications.length > 10 && (
+            <div className="p-3 text-center border-t border-gray-200 bg-gray-50">
+              <p className="text-xs text-gray-500">
+                Mostrando 10 de {notifications.length} notificações
+              </p>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Status das notificações - apenas quando não habilitadas */}
+      {!isEnabled && !isDropdownOpen && (
         <div className="absolute top-full right-0 mt-2 w-64 bg-yellow-50 border border-yellow-200 rounded-lg p-3 shadow-lg z-50">
           <div className="flex items-start">
             <AlertTriangle className="w-5 h-5 text-yellow-600 mt-0.5 mr-2" />
@@ -221,83 +348,10 @@ const NotificationSystem = ({ events = [], onNotificationSettings }) => {
                 Notificações desabilitadas
               </p>
               <p className="text-xs text-yellow-700 mt-1">
-                Clique no sino para habilitar notificações do navegador
+                Clique no botão para habilitar notificações do navegador
               </p>
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Lista de notificações */}
-      {notifications.length > 0 && (
-        <div className="absolute top-full right-0 mt-2 w-80 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-96 overflow-y-auto">
-          <div className="p-4 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium text-gray-900">
-                Notificações ({unreadCount} não lidas)
-              </h3>
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={markAllAsRead}
-                  className="text-xs text-blue-600 hover:text-blue-800"
-                >
-                  Marcar todas como lidas
-                </button>
-                <button
-                  onClick={clearNotifications}
-                  className="text-xs text-gray-500 hover:text-gray-700"
-                >
-                  Limpar
-                </button>
-                <button
-                  onClick={() => onNotificationSettings && onNotificationSettings(settings)}
-                  className="p-1 text-gray-400 hover:text-gray-600"
-                >
-                  <Settings className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <div className="divide-y divide-gray-200">
-            {notifications.slice(0, 10).map((notification) => (
-              <div
-                key={notification.id}
-                className={`p-4 hover:bg-gray-50 cursor-pointer ${!notification.read ? 'bg-blue-50' : ''}`}
-                onClick={() => markAsRead(notification.id)}
-              >
-                <div className="flex items-start">
-                  <div className="flex-shrink-0 mr-3">
-                    {getNotificationIcon(notification.type)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-gray-900">
-                      {notification.title}
-                    </p>
-                    <p className="text-sm text-gray-600 mt-1">
-                      {notification.message}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {notification.timestamp.toLocaleTimeString('pt-BR')}
-                    </p>
-                  </div>
-                  {!notification.read && (
-                    <div className="flex-shrink-0 ml-2">
-                      <div className="w-2 h-2 bg-blue-600 rounded-full"></div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {notifications.length > 10 && (
-            <div className="p-3 text-center border-t border-gray-200">
-              <p className="text-xs text-gray-500">
-                Mostrando 10 de {notifications.length} notificações
-              </p>
-            </div>
-          )}
         </div>
       )}
     </div>

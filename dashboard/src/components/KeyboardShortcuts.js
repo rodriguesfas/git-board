@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Keyboard, X, Command, Option, Shift, Control } from 'lucide-react';
+import { Keyboard, X, Command, Option } from 'lucide-react';
 
 const KeyboardShortcuts = ({ isOpen, onClose }) => {
   const [shortcuts] = useState([
@@ -56,11 +56,11 @@ const KeyboardShortcuts = ({ isOpen, onClose }) => {
   const getModifierIcon = (modifier) => {
     switch (modifier) {
       case 'ctrl':
-        return <Control className="w-3 h-3" />;
+        return <span className="text-xs font-semibold">Ctrl</span>;
       case 'alt':
         return <Option className="w-3 h-3" />;
       case 'shift':
-        return <Shift className="w-3 h-3" />;
+        return <span className="text-xs font-semibold">Shift</span>;
       case 'cmd':
         return <Command className="w-3 h-3" />;
       default:

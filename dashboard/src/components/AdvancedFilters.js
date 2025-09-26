@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Filter, Calendar, User, GitBranch, X, Search } from 'lucide-react';
 
 const AdvancedFilters = ({ 
@@ -41,10 +41,25 @@ const AdvancedFilters = ({
     });
   }, [events]);
 
+  // Memoizar a função onFiltersChange para evitar loops infinitos
+  const memoizedOnFiltersChange = useCallback(onFiltersChange, []);
+  
   // Aplicar filtros quando mudarem
   useEffect(() => {
-    onFiltersChange(filters);
-  }, [filters, onFiltersChange]);
+    memoizedOnFiltersChange(filters);
+  }, [filters, memoizedOnFiltersChange]);
+
+  // Fechar dropdown ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (isOpen && !event.target.closest('.filters-dropdown')) {
+        onToggle();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isOpen, onToggle]);
 
   const handleFilterChange = (filterType, value) => {
     setFilters(prev => ({
@@ -86,10 +101,11 @@ const AdvancedFilters = ({
 
   if (!isOpen) {
     return (
-      <button
-        onClick={onToggle}
-        className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-      >
+      <div className="filters-dropdown">
+        <button
+          onClick={onToggle}
+          className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+        >
         <Filter className="w-4 h-4 mr-2" />
         Filtros
         {getActiveFiltersCount() > 0 && (
@@ -97,39 +113,46 @@ const AdvancedFilters = ({
             {getActiveFiltersCount()}
           </span>
         )}
-      </button>
+        </button>
+      </div>
     );
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center">
-          <Filter className="w-5 h-5 text-gray-600 mr-2" />
-          <h3 className="text-lg font-medium text-gray-900">Filtros Avançados</h3>
-          {getActiveFiltersCount() > 0 && (
-            <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-              {getActiveFiltersCount()} ativo{getActiveFiltersCount() !== 1 ? 's' : ''}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center space-x-2">
-          <button
-            onClick={clearFilters}
-            className="text-sm text-gray-500 hover:text-gray-700"
-          >
-            Limpar
-          </button>
-          <button
-            onClick={onToggle}
-            className="p-1 text-gray-400 hover:text-gray-600"
-          >
-            <X className="w-4 h-4" />
-          </button>
+    <div className="filters-dropdown">
+      <div className="absolute top-full right-0 mt-2 w-96 bg-white border border-gray-200 rounded-lg shadow-xl z-50 max-h-[80vh] overflow-hidden animate-in slide-in-from-top-2 duration-200">
+      {/* Header do dropdown */}
+      <div className="p-4 border-b border-gray-200 bg-gray-50">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <Filter className="w-5 h-5 text-gray-600 mr-2" />
+            <h3 className="text-lg font-semibold text-gray-900">Filtros Avançados</h3>
+            {getActiveFiltersCount() > 0 && (
+              <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                {getActiveFiltersCount()} ativo{getActiveFiltersCount() !== 1 ? 's' : ''}
+              </span>
+            )}
+          </div>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={clearFilters}
+              className="text-sm text-gray-500 hover:text-gray-700 font-medium"
+            >
+              Limpar
+            </button>
+            <button
+              onClick={onToggle}
+              className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-200"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Conteúdo do dropdown */}
+      <div className="p-4 max-h-[calc(80vh-80px)] overflow-y-auto">
+        <div className="grid grid-cols-1 gap-4">
         {/* Busca por texto */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -291,6 +314,8 @@ const AdvancedFilters = ({
           </div>
         </div>
       )}
+        </div>
+      </div>
     </div>
   );
 };
