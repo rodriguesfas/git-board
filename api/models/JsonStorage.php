@@ -51,7 +51,7 @@ class JsonStorage
     {
         $repositories = $this->getRepositories();
         foreach ($repositories as $repo) {
-            if ($repo['github_id'] == $githubId) {
+            if ((int)$repo['github_id'] === (int)$githubId) {
                 return $repo;
             }
         }
@@ -80,7 +80,7 @@ class JsonStorage
         if ($existing) {
             // Atualizar repositório existente
             foreach ($repositories as &$repo) {
-                if ($repo['github_id'] == $data['id']) {
+                if ((int)$repo['github_id'] === (int)$data['id']) {
                     $repo = $repoData;
                     break;
                 }
@@ -92,6 +92,24 @@ class JsonStorage
 
         $this->writeData($this->repositoriesFile, $repositories);
         return $repoData['id'];
+    }
+
+    public function cleanDuplicateRepositories()
+    {
+        $repositories = $this->getRepositories();
+        $uniqueRepos = [];
+        $seenGithubIds = [];
+        
+        foreach ($repositories as $repo) {
+            $githubId = (int)$repo['github_id'];
+            if (!in_array($githubId, $seenGithubIds)) {
+                $uniqueRepos[] = $repo;
+                $seenGithubIds[] = $githubId;
+            }
+        }
+        
+        $this->writeData($this->repositoriesFile, $uniqueRepos);
+        return count($repositories) - count($uniqueRepos);
     }
 
     public function getEvents($limit = 50, $repositoryId = null)
@@ -127,7 +145,7 @@ class JsonStorage
             'body' => $data['body'] ?? null,
             'number' => $data['number'] ?? null,
             'state' => $data['state'] ?? null,
-            'merged' => $data['merged'] ? 1 : 0,
+            'merged' => isset($data['merged']) ? ($data['merged'] ? 1 : 0) : 0,
             'commits_count' => $data['commits_count'] ?? 0,
             'files_changed' => $data['files_changed'] ?? 0,
             'additions' => $data['additions'] ?? 0,

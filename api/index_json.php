@@ -204,6 +204,11 @@ class WebhookHandler
                     $this->sendResponse(['stats' => $stats]);
                     break;
 
+                case 'clean-duplicates':
+                    $removed = $this->storage->cleanDuplicateRepositories();
+                    $this->sendResponse(['message' => "Removidos $removed repositórios duplicados", 'removed' => $removed]);
+                    break;
+
                 case 'user-stats':
                     $repositoryId = $_GET['repository_id'] ?? null;
                     $limit = $_GET['limit'] ?? 10;
