@@ -1,0 +1,227 @@
+# ===========================================
+# Git Board - .gitignore
+# ===========================================
+
+# ===========================================
+# PHP / API
+# ===========================================
+# Arquivos de dados JSON (contêm dados sensíveis)
+api/data/*.json
+!api/data/.gitkeep
+
+# Logs do PHP
+*.log
+api/logs/
+api/*.log
+
+# Cache do PHP
+api/cache/
+api/tmp/
+
+# Arquivos de configuração local
+api/config/local.php
+api/.env
+api/.env.local
+
+# ===========================================
+# Node.js / React Dashboard
+# ===========================================
+# Dependências
+dashboard/node_modules/
+dashboard/npm-debug.log*
+dashboard/yarn-debug.log*
+dashboard/yarn-error.log*
+
+# Build outputs
+dashboard/build/
+dashboard/dist/
+
+# Cache do npm/yarn
+dashboard/.npm
+dashboard/.yarn
+dashboard/.yarn-integrity
+
+# Arquivos de ambiente
+dashboard/.env
+dashboard/.env.local
+dashboard/.env.development.local
+dashboard/.env.test.local
+dashboard/.env.production.local
+
+# ===========================================
+# Docker
+# ===========================================
+# Volumes do Docker
+docker-volumes/
+.docker/
+
+# Arquivos de configuração local do Docker
+docker-compose.override.yml
+docker-compose.local.yml
+
+# ===========================================
+# Logs e Túneis
+# ===========================================
+# Logs do túnel Serveo
+.tunnel.log
+tunnel.log
+
+# Logs gerais
+*.log
+logs/
+
+# ===========================================
+# Sistema Operacional
+# ===========================================
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+
+# ===========================================
+# IDEs e Editores
+# ===========================================
+# VSCode
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+/.emacs.desktop
+/.emacs.desktop.lock
+*.elc
+auto-save-list
+tramp
+.\#*
+
+# ===========================================
+# Backup e Temporários
+# ===========================================
+# Arquivos de backup
+*.bak
+*.backup
+*.old
+*.orig
+*.tmp
+
+# Arquivos temporários
+tmp/
+temp/
+.tmp/
+
+# ===========================================
+# Certificados e Chaves
+# ===========================================
+# Certificados SSL
+*.pem
+*.key
+*.crt
+*.csr
+ssl/
+
+# Chaves SSH
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+
+# ===========================================
+# Monitoramento e Métricas
+# ===========================================
+# Arquivos de monitoramento
+monitoring/
+metrics/
+*.metrics
+
+# ===========================================
+# Arquivos de Configuração Local
+# ===========================================
+# Configurações específicas do ambiente
+config/local/
+config/development/
+config/production/
+
+# Arquivos de configuração pessoal
+.personal/
+.local/
+
+# ===========================================
+# Documentação Gerada
+# ===========================================
+# Documentação auto-gerada
+docs/generated/
+api-docs/generated/
+
+# ===========================================
+# Testes
+# ===========================================
+# Coverage reports
+coverage/
+*.lcov
+
+# Test results
+test-results/
+junit.xml
+
+# ===========================================
+# Outros
+# ===========================================
+# Arquivos de lock específicos do sistema
+package-lock.json
+yarn.lock
+
+# Arquivos de configuração do sistema
+.env
+.env.*
+
+# Arquivos de cache do sistema
+.cache/
+cache/
+
+# Arquivos de sessão
+sessions/
+*.session
+
+# Arquivos de upload
+uploads/
+files/
+
+# Arquivos de configuração do servidor web
+.htaccess.local
+nginx.conf.local
+apache.conf.local

@@ -1,0 +1,58 @@
+services:
+  # API PHP
+  api:
+    build: .
+    container_name: git-board-api
+    ports:
+      - "8000:80"
+    volumes:
+      - ./api:/var/www/html
+      - ./api/data:/var/www/html/data
+    environment:
+      - APACHE_DOCUMENT_ROOT=/var/www/html
+    networks:
+      - git-board-network
+    restart: unless-stopped
+
+  # Dashboard React
+  dashboard:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+    container_name: git-board-dashboard
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./dashboard:/app
+      - /app/node_modules
+    environment:
+      - REACT_APP_API_URL=/api
+      - CHOKIDAR_USEPOLLING=true
+    depends_on:
+      - api
+    networks:
+      - git-board-network
+    restart: unless-stopped
+
+  # Nginx (Proxy reverso)
+  nginx:
+    image: nginx:alpine
+    container_name: git-board-nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf
+    depends_on:
+      - api
+      - dashboard
+    networks:
+      - git-board-network
+    restart: unless-stopped
+
+networks:
+  git-board-network:
+    driver: bridge
+
+volumes:
+  api_data:
+  node_modules:

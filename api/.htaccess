@@ -1,0 +1,23 @@
+RewriteEngine On
+
+# Definir arquivo de índice padrão
+DirectoryIndex index.php index_json.php
+
+# Redirecionar todas as requisições para index_json.php
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ index_json.php [QSA,L]
+
+# Configurações de segurança
+<Files "*.php">
+    Order Allow,Deny
+    Allow from all
+</Files>
+
+# Desabilitar listagem de diretórios
+Options -Indexes
+
+# Configurações de upload
+php_value upload_max_filesize 10M
+php_value post_max_size 10M
+php_value max_execution_time 30

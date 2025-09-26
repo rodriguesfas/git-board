@@ -1,0 +1,49 @@
+# Git
+.git
+.gitignore
+
+# Docker
+Dockerfile*
+docker-compose*
+.dockerignore
+
+# Documentation
+README*.md
+INSTALL.md
+*.md
+
+# Development files
+.env
+.env.*
+Makefile
+
+# Node modules (for dashboard)
+dashboard/node_modules
+dashboard/build
+dashboard/.env*
+
+# API data (will be mounted as volume)
+api/data/*.json
+
+# Logs
+*.log
+logs/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Backup files
+backups/
+*.backup
+*.bak
+
+# Test files
+tests/
+phpunit.xml
