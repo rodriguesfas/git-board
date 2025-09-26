@@ -5,6 +5,7 @@ import StatsCards from './components/StatsCards';
 import UserStats from './components/UserStats';
 import EventTypeChart from './components/EventTypeChart';
 import RepositorySelector from './components/RepositorySelector';
+import SettingsModal from './components/SettingsModal';
 import { useTimeline, useStats, useUserStats, useEventStats, useRepositories } from './hooks/useApi';
 import Tooltip, { useTooltips } from './components/Tooltip';
 import { apiService } from './services/api';
@@ -13,6 +14,7 @@ function App() {
   const [selectedRepository, setSelectedRepository] = useState(null);
   const [refreshInterval, setRefreshInterval] = useState(null);
   const [lastRefreshTime, setLastRefreshTime] = useState(null);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const tooltips = useTooltips();
 
   // Hooks para buscar dados
@@ -94,7 +96,10 @@ function App() {
               </Tooltip>
               
               <Tooltip content={tooltips.settingsButton} position="bottom">
-                <button className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <button 
+                  onClick={() => setShowSettingsModal(true)}
+                  className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
                   <Settings className="w-4 h-4 mr-2" />
                   Configurações
                 </button>
@@ -112,7 +117,6 @@ function App() {
             repositories={repositories}
             selectedRepository={selectedRepository}
             onRepositoryChange={handleRepositoryChange}
-            onRepositoryDelete={handleRepositoryDelete}
             loading={reposLoading}
           />
         </div>
@@ -170,6 +174,14 @@ function App() {
           </div>
         </div>
       </footer>
+
+      {/* Modal de Configurações */}
+      <SettingsModal
+        isOpen={showSettingsModal}
+        onClose={() => setShowSettingsModal(false)}
+        repositories={repositories}
+        onRepositoryDelete={handleRepositoryDelete}
+      />
     </div>
   );
 }
