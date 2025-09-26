@@ -1,0 +1,84 @@
+/* Modo Compacto - Git Board */
+
+.compact-mode .stats-card {
+  padding: 1rem;
+}
+
+.compact-mode .stats-card h3 {
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+
+.compact-mode .stats-card .stat-value {
+  font-size: 1.5rem;
+}
+
+.compact-mode .timeline-item {
+  padding: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.compact-mode .timeline-item .event-header {
+  margin-bottom: 0.25rem;
+}
+
+.compact-mode .timeline-item .event-details {
+  font-size: 0.75rem;
+}
+
+.compact-mode .chart-container {
+  height: 200px;
+}
+
+.compact-mode .activity-chart {
+  height: 150px;
+}
+
+.compact-mode .grid-cols-1 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.compact-mode .lg\\:grid-cols-2 {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+.compact-mode .lg\\:grid-cols-5 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.compact-mode .space-y-4 > * + * {
+  margin-top: 0.5rem;
+}
+
+.compact-mode .space-y-6 > * + * {
+  margin-top: 1rem;
+}
+
+.compact-mode .mb-8 {
+  margin-bottom: 1rem;
+}
+
+.compact-mode .py-8 {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
+.compact-mode .p-6 {
+  padding: 1rem;
+}
+
+.compact-mode .text-lg {
+  font-size: 1rem;
+}
+
+.compact-mode .text-2xl {
+  font-size: 1.5rem;
+}
+
+.compact-mode .h-64 {
+  height: 12rem;
+}
+
+.compact-mode .h-32 {
+  height: 8rem;
+}
