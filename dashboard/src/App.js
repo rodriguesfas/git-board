@@ -7,6 +7,7 @@ import EventTypeChart from './components/EventTypeChart';
 import RepositorySelector from './components/RepositorySelector';
 import { useTimeline, useStats, useUserStats, useEventStats, useRepositories } from './hooks/useApi';
 import Tooltip, { useTooltips } from './components/Tooltip';
+import { apiService } from './services/api';
 
 function App() {
   const [selectedRepository, setSelectedRepository] = useState(null);
@@ -46,6 +47,25 @@ function App() {
 
   const handleRepositoryChange = (repositoryId) => {
     setSelectedRepository(repositoryId);
+  };
+
+  const handleRepositoryDelete = async (repositoryId) => {
+    try {
+      await apiService.deleteRepository(repositoryId);
+      
+      // Se o repositório deletado era o selecionado, limpar seleção
+      if (selectedRepository === repositoryId) {
+        setSelectedRepository(null);
+      }
+      
+      // Atualizar todos os dados
+      refreshAll();
+      
+      console.log('Repositório removido com sucesso');
+    } catch (error) {
+      console.error('Erro ao remover repositório:', error);
+      throw error; // Re-throw para o componente lidar com o erro
+    }
   };
 
   return (
@@ -92,6 +112,7 @@ function App() {
             repositories={repositories}
             selectedRepository={selectedRepository}
             onRepositoryChange={handleRepositoryChange}
+            onRepositoryDelete={handleRepositoryDelete}
             loading={reposLoading}
           />
         </div>

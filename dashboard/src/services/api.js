@@ -41,6 +41,11 @@ export const apiService = {
     return api.get('/repositories');
   },
 
+  // Deletar repositório
+  deleteRepository: (repositoryId) => {
+    return api.delete(`/repositories/${repositoryId}`);
+  },
+
   // Atividade recente
   getRecentActivity: (hours = 24, repositoryId = null) => {
     const params = { hours };

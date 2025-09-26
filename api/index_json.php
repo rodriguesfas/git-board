@@ -5,7 +5,7 @@
 
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+header('Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type, Authorization, X-GitHub-Event, X-Hub-Signature-256');
 
 // Handle preflight requests
@@ -42,6 +42,10 @@ class WebhookHandler
 
                 case 'GET':
                     $this->handleGetRequest($path);
+                    break;
+
+                case 'DELETE':
+                    $this->handleDeleteRequest($path);
                     break;
 
                 default:
@@ -230,6 +234,27 @@ class WebhookHandler
             }
         } else {
             $this->sendResponse(['error' => 'Endpoint não encontrado'], 404);
+        }
+    }
+
+    private function handleDeleteRequest($path)
+    {
+        // Extrair ID do repositório da URL
+        if (preg_match('/\/api\/repositories\/([^\/]+)/', $path, $matches)) {
+            $repositoryId = $matches[1];
+            
+            $success = $this->storage->deleteRepository($repositoryId);
+            
+            if ($success) {
+                $this->sendResponse([
+                    'message' => 'Repositório e todos os seus dados foram removidos com sucesso',
+                    'repository_id' => $repositoryId
+                ]);
+            } else {
+                $this->sendResponse(['error' => 'Repositório não encontrado'], 404);
+            }
+        } else {
+            $this->sendResponse(['error' => 'Endpoint DELETE não encontrado'], 404);
         }
     }
 

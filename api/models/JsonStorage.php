@@ -289,4 +289,43 @@ class JsonStorage
         
         return array_values($activity);
     }
+
+    /**
+     * Remove um repositório e todos os seus eventos
+     */
+    public function deleteRepository($repositoryId)
+    {
+        // Carregar dados atuais
+        $repositories = $this->readData($this->repositoriesFile);
+        $events = $this->readData($this->eventsFile);
+        
+        // Verificar se o repositório existe
+        $repositoryExists = false;
+        foreach ($repositories as $repo) {
+            if ($repo['id'] === $repositoryId) {
+                $repositoryExists = true;
+                break;
+            }
+        }
+        
+        if (!$repositoryExists) {
+            return false;
+        }
+        
+        // Remover repositório
+        $repositories = array_filter($repositories, function($repo) use ($repositoryId) {
+            return $repo['id'] !== $repositoryId;
+        });
+        
+        // Remover todos os eventos do repositório
+        $events = array_filter($events, function($event) use ($repositoryId) {
+            return $event['repository_id'] !== $repositoryId;
+        });
+        
+        // Salvar dados atualizados
+        $this->writeData($this->repositoriesFile, array_values($repositories));
+        $this->writeData($this->eventsFile, array_values($events));
+        
+        return true;
+    }
 }
