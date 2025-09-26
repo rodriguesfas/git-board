@@ -3,6 +3,7 @@ import { RefreshCw, Settings, Github, Keyboard } from 'lucide-react';
 import Timeline from './components/Timeline';
 import StatsCards from './components/StatsCards';
 import UserStats from './components/UserStats';
+import RecentActivity from './components/RecentActivity';
 import EventTypeChart from './components/EventTypeChart';
 import SettingsModal from './components/SettingsModal';
 import AdvancedFilters from './components/AdvancedFilters';
@@ -228,6 +229,7 @@ function App() {
               <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-8 mb-8 grid-responsive">
                 <EventTypeChart eventStats={eventStats} loading={eventStatsLoading} />
                 <UserStats userStats={userStats} loading={userStatsLoading} />
+                <RecentActivity timeline={timeline} userStats={userStats} loading={timelineLoading} />
               </div>
 
               {/* Activity Chart */}
