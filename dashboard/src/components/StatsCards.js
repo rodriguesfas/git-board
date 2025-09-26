@@ -16,7 +16,7 @@ const StatsCards = ({ stats, repositories, loading }) => {
   
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 2xl:grid-cols-6 gap-6">
         {[...Array(5)].map((_, i) => (
           <div key={i} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="animate-pulse">
@@ -91,7 +91,7 @@ const StatsCards = ({ stats, repositories, loading }) => {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 2xl:grid-cols-6 gap-6 stats-responsive">
       {cards.map((card, index) => (
         <div key={index} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between">

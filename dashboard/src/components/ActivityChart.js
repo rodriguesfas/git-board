@@ -132,7 +132,7 @@ const ActivityChart = ({ events = [], loading = false }) => {
       </div>
 
       {/* Estatísticas */}
-      <div className="grid grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
         <div className="text-center p-3 bg-blue-50 rounded-lg">
           <div className="text-2xl font-bold text-blue-600">{totalEvents}</div>
           <div className="text-sm text-blue-800">Total de Eventos</div>
@@ -145,11 +145,23 @@ const ActivityChart = ({ events = [], loading = false }) => {
           <div className="text-2xl font-bold text-purple-600">{maxValue}</div>
           <div className="text-sm text-purple-800">Pico de Atividade</div>
         </div>
+        <div className="text-center p-3 bg-orange-50 rounded-lg hidden xl:block">
+          <div className="text-2xl font-bold text-orange-600">{chartData.filter(d => d.value > 0).length}</div>
+          <div className="text-sm text-orange-800">Períodos Ativos</div>
+        </div>
+        <div className="text-center p-3 bg-indigo-50 rounded-lg hidden xl:block">
+          <div className="text-2xl font-bold text-indigo-600">{Math.round((chartData.filter(d => d.value > 0).length / chartData.length) * 100)}%</div>
+          <div className="text-sm text-indigo-800">Taxa de Atividade</div>
+        </div>
+        <div className="text-center p-3 bg-pink-50 rounded-lg hidden xl:block">
+          <div className="text-2xl font-bold text-pink-600">{chartData.length > 0 ? Math.round(totalEvents / chartData.length * 100) / 100 : 0}</div>
+          <div className="text-sm text-pink-800">Eventos/Período</div>
+        </div>
       </div>
 
       {/* Gráfico */}
       <div className="relative">
-        <div className="flex items-end justify-between h-64 px-4 pb-4 border-b border-gray-200">
+        <div className="flex items-end justify-between h-64 chart-responsive px-4 pb-4 border-b border-gray-200">
           {chartData.map((item, index) => (
             <div key={index} className="flex flex-col items-center flex-1">
               <div

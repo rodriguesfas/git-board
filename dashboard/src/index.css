@@ -55,3 +55,33 @@ code {
 .animate-pulse {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
+
+/* Otimizações para monitores grandes */
+@media (min-width: 1920px) {
+  .container {
+    max-width: none;
+  }
+  
+  .grid-responsive {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+  
+  .chart-responsive {
+    height: 400px;
+  }
+  
+  .stats-responsive {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+}
+
+/* Melhorias para telas ultra-wide */
+@media (min-width: 2560px) {
+  .grid-responsive {
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  }
+  
+  .chart-responsive {
+    height: 500px;
+  }
+}
