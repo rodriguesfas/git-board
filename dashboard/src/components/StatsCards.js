@@ -8,8 +8,11 @@ import {
   TrendingUp
 } from 'lucide-react';
 import { formatNumber } from '../utils/formatDate';
+import Tooltip, { useTooltips } from './Tooltip';
 
 const StatsCards = ({ stats, loading }) => {
+  const tooltips = useTooltips();
+  
   if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -53,25 +56,29 @@ const StatsCards = ({ stats, loading }) => {
       title: 'Total de Eventos',
       value: formatNumber(totals.totalEvents),
       icon: <Activity className="w-6 h-6 text-blue-600" />,
-      color: 'bg-blue-50 text-blue-600'
+      color: 'bg-blue-50 text-blue-600',
+      tooltip: tooltips.totalEvents
     },
     {
       title: 'Pushes',
       value: formatNumber(totals.totalPushes),
       icon: <GitCommit className="w-6 h-6 text-green-600" />,
-      color: 'bg-green-50 text-green-600'
+      color: 'bg-green-50 text-green-600',
+      tooltip: "Commits enviados para os repositórios. Cada push pode conter um ou mais commits com mudanças no código."
     },
     {
       title: 'Pull Requests',
       value: formatNumber(totals.totalPullRequests),
       icon: <GitPullRequest className="w-6 h-6 text-purple-600" />,
-      color: 'bg-purple-50 text-purple-600'
+      color: 'bg-purple-50 text-purple-600',
+      tooltip: "Solicitações de merge de branches. Incluem aberturas, fechamentos, merges e reviews de PRs."
     },
     {
       title: 'Issues',
       value: formatNumber(totals.totalIssues),
       icon: <AlertCircle className="w-6 h-6 text-orange-600" />,
-      color: 'bg-orange-50 text-orange-600'
+      color: 'bg-orange-50 text-orange-600',
+      tooltip: "Problemas, bugs, melhorias e discussões nos repositórios. Incluem aberturas, fechamentos e comentários."
     }
   ];
 
@@ -80,10 +87,19 @@ const StatsCards = ({ stats, loading }) => {
       {cards.map((card, index) => (
         <div key={index} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-gray-600 mb-1">
-                {card.title}
-              </p>
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-1">
+                <p className="text-sm font-medium text-gray-600">
+                  {card.title}
+                </p>
+                <Tooltip content={card.tooltip} position="top">
+                  <div className="text-gray-400 hover:text-gray-600 transition-colors">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                </Tooltip>
+              </div>
               <p className="text-2xl font-bold text-gray-900">
                 {card.value}
               </p>

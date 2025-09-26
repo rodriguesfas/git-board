@@ -1,8 +1,11 @@
 import React from 'react';
 import { formatRelativeTime } from '../utils/formatDate';
 import { getEventIcon, getEventColor, getActionText } from '../utils/eventIcons';
+import Tooltip, { useTooltips } from './Tooltip';
 
 const Timeline = ({ events, loading }) => {
+  const tooltips = useTooltips();
+  
   if (loading) {
     return (
       <div className="flex justify-center items-center h-64">
@@ -36,9 +39,18 @@ const Timeline = ({ events, loading }) => {
             
             <div className="flex-1 min-w-0">
               <div className="flex items-center space-x-2 mb-2">
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getEventColor(event.event_type)}`}>
-                  {event.event_type}
-                </span>
+                <div className="flex items-center gap-1">
+                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getEventColor(event.event_type)}`}>
+                    {event.event_type}
+                  </span>
+                  <Tooltip content={tooltips.eventType} position="top">
+                    <div className="text-gray-400 hover:text-gray-600 transition-colors">
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  </Tooltip>
+                </div>
                 {event.action && (
                   <span className="text-sm text-gray-600">
                     {getActionText(event.event_type, event.action)}
@@ -47,13 +59,40 @@ const Timeline = ({ events, loading }) => {
               </div>
 
               <div className="flex items-center space-x-4 text-sm text-gray-600 mb-2">
-                <span className="font-medium text-gray-900">
-                  {event.repository_name}
-                </span>
+                <div className="flex items-center gap-1">
+                  <span className="font-medium text-gray-900">
+                    {event.repository_name}
+                  </span>
+                  <Tooltip content={tooltips.eventRepository} position="top">
+                    <div className="text-gray-400 hover:text-gray-600 transition-colors">
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  </Tooltip>
+                </div>
                 {event.actor_login && (
-                  <span>por <strong>{event.actor_login}</strong></span>
+                  <div className="flex items-center gap-1">
+                    <span>por <strong>{event.actor_login}</strong></span>
+                    <Tooltip content={tooltips.eventActor} position="top">
+                      <div className="text-gray-400 hover:text-gray-600 transition-colors">
+                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                    </Tooltip>
+                  </div>
                 )}
-                <span>{formatRelativeTime(event.created_at)}</span>
+                <div className="flex items-center gap-1">
+                  <span>{formatRelativeTime(event.created_at)}</span>
+                  <Tooltip content={tooltips.eventTime} position="top">
+                    <div className="text-gray-400 hover:text-gray-600 transition-colors">
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" />
+                      </svg>
+                    </div>
+                  </Tooltip>
+                </div>
               </div>
 
               {event.title && (
