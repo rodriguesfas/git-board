@@ -5,18 +5,19 @@ import {
   AlertCircle, 
   Users, 
   Activity,
-  TrendingUp
+  TrendingUp,
+  GitBranch
 } from 'lucide-react';
 import { formatNumber } from '../utils/formatDate';
 import Tooltip, { useTooltips } from './Tooltip';
 
-const StatsCards = ({ stats, loading }) => {
+const StatsCards = ({ stats, repositories, loading }) => {
   const tooltips = useTooltips();
   
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[...Array(4)].map((_, i) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+        {[...Array(5)].map((_, i) => (
           <div key={i} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
             <div className="animate-pulse">
               <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
@@ -60,6 +61,13 @@ const StatsCards = ({ stats, loading }) => {
       tooltip: tooltips.totalEvents
     },
     {
+      title: 'Repositórios',
+      value: formatNumber(repositories ? repositories.length : 0),
+      icon: <GitBranch className="w-6 h-6 text-indigo-600" />,
+      color: 'bg-indigo-50 text-indigo-600',
+      tooltip: "Número total de repositórios únicos que enviaram eventos para este dashboard."
+    },
+    {
       title: 'Pushes',
       value: formatNumber(totals.totalPushes),
       icon: <GitCommit className="w-6 h-6 text-green-600" />,
@@ -83,7 +91,7 @@ const StatsCards = ({ stats, loading }) => {
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
       {cards.map((card, index) => (
         <div key={index} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
           <div className="flex items-center justify-between">

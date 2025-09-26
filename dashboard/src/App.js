@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { RefreshCw, Settings, Github, Wifi, WifiOff } from 'lucide-react';
+import { RefreshCw, Settings, Github } from 'lucide-react';
 import Timeline from './components/Timeline';
 import StatsCards from './components/StatsCards';
 import UserStats from './components/UserStats';
 import EventTypeChart from './components/EventTypeChart';
 import RepositorySelector from './components/RepositorySelector';
 import { useTimeline, useStats, useUserStats, useEventStats, useRepositories } from './hooks/useApi';
-import { useSSE } from './hooks/useSSE';
 import Tooltip, { useTooltips } from './components/Tooltip';
 
 function App() {
@@ -33,21 +32,9 @@ function App() {
     refetchEventStats();
   };
 
-  // SSE para notificações em tempo real
-  const { isConnected: sseConnected } = useSSE(
-    '/api/sse.php',
-    (data) => {
-      console.log('Novo evento recebido via SSE, atualizando dados...', data);
-      refreshAll();
-    },
-    (error) => {
-      console.error('Erro na conexão SSE:', error);
-    }
-  );
-
-  // Auto-refresh a cada 60 segundos (fallback caso SSE falhe)
+  // Auto-refresh a cada 30 segundos
   useEffect(() => {
-    const interval = setInterval(refreshAll, 60000);
+    const interval = setInterval(refreshAll, 30000);
     setRefreshInterval(interval);
     
     return () => {
@@ -76,23 +63,6 @@ function App() {
             </div>
             
             <div className="flex items-center space-x-4">
-              {/* Indicador de conexão SSE */}
-              <Tooltip content={tooltips.realTimeConnection} position="bottom">
-                <div className="flex items-center space-x-2 cursor-help">
-                  {sseConnected ? (
-                    <div className="flex items-center text-green-600">
-                      <Wifi className="w-4 h-4" />
-                      <span className="text-xs ml-1">Tempo Real</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center text-red-600">
-                      <WifiOff className="w-4 h-4" />
-                      <span className="text-xs ml-1">Offline</span>
-                    </div>
-                  )}
-                </div>
-              </Tooltip>
-              
               <Tooltip content={tooltips.refreshButton} position="bottom">
                 <button
                   onClick={refreshAll}
@@ -128,7 +98,7 @@ function App() {
 
         {/* Stats Cards */}
         <div className="mb-8">
-          <StatsCards stats={stats} loading={statsLoading} />
+          <StatsCards stats={stats} repositories={repositories} loading={statsLoading} />
         </div>
 
         {/* Charts and Stats */}
@@ -153,11 +123,7 @@ function App() {
               </Tooltip>
             </div>
             <div className="text-sm text-gray-500">
-              {sseConnected ? (
-                <span className="text-green-600">Atualização em tempo real ativa</span>
-              ) : (
-                <span className="text-yellow-600">Atualização automática a cada 60 segundos</span>
-              )}
+              <span className="text-blue-600">Atualização automática a cada 30 segundos</span>
               {lastRefreshTime && (
                 <Tooltip content={tooltips.lastUpdate} position="top">
                   <span className="ml-2 text-gray-400 cursor-help">

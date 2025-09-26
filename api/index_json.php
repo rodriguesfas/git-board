@@ -93,19 +93,6 @@ class WebhookHandler
 
         // Salvar evento
         $eventId = $this->storage->saveEvent($eventData);
-        
-        // Notificar via SSE que um novo evento chegou
-        $this->notifyNewEvent($eventId);
-    }
-    
-    private function notifyNewEvent($eventId)
-    {
-        // Salvar o ID do último evento para o SSE
-        $lastEventFile = __DIR__ . '/data/last_event_id.txt';
-        file_put_contents($lastEventFile, $eventId);
-        
-        // Log para debug
-        error_log("Novo evento salvo com ID: $eventId");
     }
 
     private function extractEventData($eventType, $data, $repositoryId)
