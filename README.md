@@ -1,10 +1,11 @@
 # Git Board - Dashboard GitHub Webhooks
 
-Sistema simples para receber e visualizar webhooks do GitHub em tempo real.
+Sistema completo para receber, processar e visualizar webhooks do GitHub em tempo real com interface moderna e funcionalidades avançadas.
 
 ## 🚀 **Início Rápido**
 
 ### **Modo Local (desenvolvimento)**
+
 ```bash
 # 1. Iniciar aplicação
 make up
@@ -51,7 +52,13 @@ make webhook-url
 1. Vá para seu repositório → **Settings** → **Webhooks** → **Add webhook**
 2. **Payload URL**: `http://SEU_IP:8000/index_json.php` (use a URL do comando acima)
 3. **Content type**: `application/json`
-4. **Events**: Marque `push`, `pull_request`, `issues`
+4. **Events**: Marque os eventos desejados:
+   - ✅ `push` - Commits e pushes
+   - ✅ `pull_request` - Pull requests
+   - ✅ `issues` - Issues e comentários
+   - ✅ `workflow_run` - GitHub Actions
+   - ✅ `check_run` - Checks e testes
+   - ✅ `check_suite` - Suites de verificação
 5. Clique **Add webhook**
 
 ### **3. Testar**
@@ -78,6 +85,25 @@ make build       # Reconstruir containers
 make clean       # Limpar containers e volumes
 make help        # Ver todos os comandos
 ```
+
+## 🛠️ **Tecnologias Utilizadas**
+
+### **Backend**
+- **PHP 8.1+**: API RESTful para processamento de webhooks
+- **JSON Storage**: Armazenamento de dados sem banco de dados
+- **Docker**: Containerização da aplicação
+- **Nginx**: Proxy reverso e servidor web
+
+### **Frontend**
+- **React 18**: Interface de usuário moderna
+- **Tailwind CSS**: Estilização responsiva
+- **Lucide React**: Ícones modernos
+- **Axios**: Cliente HTTP para API
+
+### **Infraestrutura**
+- **Docker Compose**: Orquestração de containers
+- **Nginx**: Balanceamento de carga
+- **Túneis Públicos**: ngrok, localtunnel, serveo.net
 
 ## 🔧 **Solução de Problemas**
 
@@ -107,18 +133,103 @@ make logs-dashboard
 
 # Verificar se API responde
 curl http://localhost:8000/api/repositories
+
+# Verificar se containers estão rodando
+make status
 ```
 
-## 📊 **O que o sistema faz**
+### **Atividade Temporal não mostra dados**
+```bash
+# Verificar se há eventos na API
+curl http://localhost:8000/api/timeline?limit=5
 
-- ✅ Recebe webhooks do GitHub (push, pull requests, issues)
-- ✅ Mostra timeline de eventos em tempo real
-- ✅ Exibe estatísticas por repositório e usuário
-- ✅ Gráficos interativos de atividade
-- ✅ Auto-refresh a cada 30 segundos
-- ✅ Interface responsiva e moderna
-- ✅ Armazenamento JSON (sem banco de dados)
-- ✅ Túnel público gratuito (serveo.net)
+# Verificar logs da API
+make logs-api
+
+# Recarregar página (F5) para forçar atualização
+```
+
+### **Notificações não funcionam**
+```bash
+# Verificar permissões do navegador
+# - Chrome: Configurações > Privacidade > Notificações
+# - Firefox: Configurações > Privacidade > Notificações
+
+# Verificar se eventos estão chegando
+make logs-api
+```
+
+### **Problemas com túnel público**
+```bash
+# Tentar outro serviço de túnel
+make up-public
+# Escolher ngrok se localtunnel não funcionar
+
+# Verificar se porta 80 está livre
+sudo lsof -i:80
+```
+
+## 📊 **Funcionalidades**
+
+### **🎯 Core Features**
+- ✅ **Webhooks GitHub**: Recebe push, pull requests, issues, workflows, checks
+- ✅ **Timeline em Tempo Real**: Visualização cronológica de todos os eventos
+- ✅ **Dashboard Interativo**: Interface moderna e responsiva
+- ✅ **Auto-refresh**: Atualização automática a cada 30 segundos
+- ✅ **Armazenamento JSON**: Sem necessidade de banco de dados
+
+### **📈 Analytics & Visualizações**
+- ✅ **Atividade Temporal**: Gráficos de atividade por hora/dia/mês
+- ✅ **Estatísticas por Usuário**: Ranking de desenvolvedores mais ativos
+- ✅ **Estatísticas por Evento**: Distribuição de tipos de eventos
+- ✅ **Cards de Estatísticas**: Métricas resumidas e insights
+- ✅ **Filtros Avançados**: Por repositório, tipo de evento, período
+
+### **🔔 Sistema de Notificações**
+- ✅ **Notificações do Navegador**: Alertas em tempo real
+- ✅ **Detecção de Alta Atividade**: Alerta quando há muitos eventos
+- ✅ **Cooldown Inteligente**: Evita spam de notificações
+- ✅ **Configurações Personalizáveis**: Controle total sobre notificações
+
+### **🛠️ Ferramentas & Utilitários**
+- ✅ **Health Check**: Monitoramento do status dos serviços
+- ✅ **Modo Compacto**: Interface otimizada para telas menores
+- ✅ **Atalhos de Teclado**: Navegação rápida (F5, Ctrl+R, etc.)
+- ✅ **Relatórios & Insights**: Análises automáticas de padrões
+- ✅ **Seletor de Repositórios**: Visualização por repositório específico
+
+### **🚀 Deploy & Acesso**
+- ✅ **Docker Compose**: Deploy simples e rápido
+- ✅ **Túnel Público**: Acesso via internet (ngrok, localtunnel, serveo)
+- ✅ **Nginx**: Proxy reverso e balanceamento
+- ✅ **API RESTful**: Endpoints para integração externa
+
+## 🔌 **API Endpoints**
+
+### **Timeline & Eventos**
+```bash
+GET /api/timeline?limit=50&repository_id=ID
+GET /api/activity?hours=24&repository_id=ID
+```
+
+### **Estatísticas**
+```bash
+GET /api/stats?repository_id=ID
+GET /api/user-stats?repository_id=ID&limit=10
+GET /api/event-stats?repository_id=ID
+```
+
+### **Repositórios**
+```bash
+GET /api/repositories
+DELETE /api/repositories/{id}
+```
+
+### **Webhook**
+```bash
+POST /index_json.php
+# Recebe webhooks do GitHub
+```
 
 ## 🎯 **Exemplo Completo**
 
@@ -164,4 +275,26 @@ make up-public
 # Acesse a URL pública do túnel
 ```
 
-**Pronto! Seu dashboard está funcionando! 🎉**
+## ⌨️ **Atalhos de Teclado**
+
+| Atalho | Ação |
+|--------|------|
+| `F5` | Atualizar dados |
+| `Ctrl + R` | Atualizar dados |
+| `Ctrl + ,` | Abrir configurações |
+| `Ctrl + F` | Abrir filtros |
+| `Ctrl + H` | Abrir ajuda |
+| `Ctrl + M` | Alternar modo compacto |
+| `Esc` | Fechar modais |
+
+## 🎉 **Pronto!**
+
+Seu dashboard está funcionando! Agora você pode:
+
+- 📊 **Monitorar** atividade do GitHub em tempo real
+- 🔔 **Receber** notificações de eventos importantes  
+- 📈 **Analisar** padrões de desenvolvimento
+- 🎯 **Filtrar** por repositório, usuário ou tipo de evento
+- 📱 **Acessar** de qualquer dispositivo via túnel público
+
+**Divirta-se monitorando seu código! 🚀**
