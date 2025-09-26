@@ -6,7 +6,9 @@ const ActivityChart = ({ events = [], loading = false }) => {
   const [chartType, setChartType] = useState('hourly'); // hourly, daily, weekly
 
   const chartData = useMemo(() => {
-    if (!events || events.length === 0) return [];
+    if (!events || events.length === 0) {
+      return [];
+    }
 
     const now = new Date();
     let data = [];
@@ -20,8 +22,11 @@ const ActivityChart = ({ events = [], loading = false }) => {
           const hourEnd = new Date(hourStart.getTime() + 60 * 60 * 1000);
           
           const count = events.filter(event => {
-            const eventDate = new Date(event.created_at);
-            return eventDate >= hourStart && eventDate < hourEnd;
+            // Converter formato "2025-09-26 05:12:35" para ISO
+            const isoDate = event.created_at.replace(' ', 'T') + 'Z';
+            const eventDate = new Date(isoDate);
+            const isInRange = eventDate >= hourStart && eventDate < hourEnd;
+            return isInRange;
           }).length;
 
           return {
@@ -40,7 +45,9 @@ const ActivityChart = ({ events = [], loading = false }) => {
           const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
           
           const count = events.filter(event => {
-            const eventDate = new Date(event.created_at);
+            // Converter formato "2025-09-26 05:12:35" para ISO
+            const isoDate = event.created_at.replace(' ', 'T') + 'Z';
+            const eventDate = new Date(isoDate);
             return eventDate >= dayStart && eventDate < dayEnd;
           }).length;
 
@@ -60,7 +67,9 @@ const ActivityChart = ({ events = [], loading = false }) => {
           const dayEnd = new Date(dayStart.getTime() + 24 * 60 * 60 * 1000);
           
           const count = events.filter(event => {
-            const eventDate = new Date(event.created_at);
+            // Converter formato "2025-09-26 05:12:35" para ISO
+            const isoDate = event.created_at.replace(' ', 'T') + 'Z';
+            const eventDate = new Date(isoDate);
             return eventDate >= dayStart && eventDate < dayEnd;
           }).length;
 
