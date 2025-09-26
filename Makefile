@@ -128,7 +128,7 @@ info: ## Mostrar informações da aplicação
 	@echo "  Nginx:     http://localhost"
 	@echo ""
 	@echo "$(YELLOW)🔌 Webhook GitHub:$(NC)"
-	@echo "  URL: http://localhost:8000/index_json.php"
+	@echo "  URL: http://localhost/api/"
 	@echo "  Content-Type: application/json"
 	@echo ""
 	@echo "$(YELLOW)📁 Volumes:$(NC)"
@@ -181,8 +181,8 @@ webhook-url: ## Mostrar URLs para configurar webhook no GitHub
 	echo "$(YELLOW)📡 IP Local: $$LOCAL_IP$(NC)"; \
 	echo ""; \
 	echo "$(YELLOW)🔗 URLs para webhook:$(NC)"; \
-	echo "   Desenvolvimento: http://$$LOCAL_IP:8000/index_json.php"; \
-	echo "   Produção: http://$$LOCAL_IP:8000/index.php"; \
+	echo "   Desenvolvimento: http://$$LOCAL_IP/api/"; \
+	echo "   Produção: http://$$LOCAL_IP/api/"; \
 	echo ""; \
 	echo "$(YELLOW)📋 Configuração no GitHub:$(NC)"; \
 	echo "   1. Settings > Webhooks > Add webhook"; \

@@ -33,7 +33,7 @@ class WebhookHandler
         try {
             switch ($method) {
                 case 'POST':
-                    if ($path === '/api/index_json.php' || $path === '/') {
+                    if ($path === '/api/index_json.php' || $path === '/' || $path === '/api/') {
                         $this->handleWebhook();
                     } else {
                         $this->sendResponse(['error' => 'Endpoint não encontrado'], 404);
