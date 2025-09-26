@@ -5,6 +5,14 @@ const NotificationSystem = ({ events = [], onNotificationSettings }) => {
   const [notifications, setNotifications] = useState([]);
   const [isEnabled, setIsEnabled] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [lastHighActivityNotification, setLastHighActivityNotification] = useState(() => {
+    // Carregar do localStorage se disponível
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('git-board-last-high-activity-notification');
+      return saved ? new Date(saved) : null;
+    }
+    return null;
+  });
   const [settings, setSettings] = useState({
     push: true,
     email: false,
@@ -170,14 +178,40 @@ const NotificationSystem = ({ events = [], onNotificationSettings }) => {
     });
 
     if (last5Minutes.length >= settings.thresholds.highActivity) {
-      addNotification(
-        'info',
-        'Alta atividade detectada',
-        `${last5Minutes.length} eventos nos últimos 5 minutos`,
-        { count: last5Minutes.length, period: '5 minutos' }
+      // Verificar se já notificamos sobre alta atividade recentemente
+      const shouldNotify = !lastHighActivityNotification || 
+        (now - lastHighActivityNotification) > 10 * 60 * 1000; // 10 minutos de cooldown
+
+      // Verificar se os eventos são principalmente de workflow (menos críticos)
+      const workflowEvents = last5Minutes.filter(event => 
+        ['workflow_run', 'workflow_job', 'check_run', 'check_suite'].includes(event.event_type)
       );
+      const isMostlyWorkflow = workflowEvents.length >= last5Minutes.length * 0.8;
+
+      // Se são principalmente eventos de workflow, usar cooldown mais longo
+      const cooldownTime = isMostlyWorkflow ? 15 * 60 * 1000 : 10 * 60 * 1000; // 15 min para workflow, 10 min para outros
+      const shouldNotifyWithCooldown = !lastHighActivityNotification || 
+        (now - lastHighActivityNotification) > cooldownTime;
+
+      if (shouldNotify && shouldNotifyWithCooldown) {
+        const message = isMostlyWorkflow 
+          ? `${last5Minutes.length} eventos nos últimos 5 minutos (principalmente workflows)`
+          : `${last5Minutes.length} eventos nos últimos 5 minutos`;
+          
+        addNotification(
+          'info',
+          'Alta atividade detectada',
+          message,
+          { count: last5Minutes.length, period: '5 minutos', isWorkflow: isMostlyWorkflow }
+        );
+        setLastHighActivityNotification(now);
+        // Salvar no localStorage para persistir entre recarregamentos
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('git-board-last-high-activity-notification', now.toISOString());
+        }
+      }
     }
-  }, [events, settings.thresholds.highActivity, addNotification]);
+  }, [events, settings.thresholds.highActivity, addNotification, lastHighActivityNotification]);
 
   const markAsRead = (id) => {
     setNotifications(prev => 
