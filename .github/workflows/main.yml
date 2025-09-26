@@ -1,0 +1,294 @@
+name: Deploy Git Board
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+env:
+  NODE_VERSION: '18'
+  PHP_VERSION: '8.1'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: dashboard/package-lock.json
+        
+    - name: Install dashboard dependencies
+      run: |
+        cd dashboard
+        npm ci
+        
+    - name: Run dashboard tests
+      run: |
+        cd dashboard
+        npm test -- --coverage --watchAll=false
+        
+    - name: Build dashboard
+      run: |
+        cd dashboard
+        npm run build
+        
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ env.PHP_VERSION }}
+        extensions: json, curl, mbstring
+        
+    - name: Install PHP dependencies
+      run: |
+        cd api
+        composer install --no-dev --optimize-autoloader
+        
+    - name: Run PHP tests
+      run: |
+        cd api
+        php -l index_json.php
+        php -l models/JsonStorage.php
+
+  deploy:
+    needs: test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: dashboard/package-lock.json
+        
+    - name: Install dashboard dependencies
+      run: |
+        cd dashboard
+        npm ci
+        
+    - name: Build dashboard for production
+      run: |
+        cd dashboard
+        npm run build
+        
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: ${{ env.PHP_VERSION }}
+        extensions: json, curl, mbstring
+        
+    - name: Install PHP dependencies
+      run: |
+        cd api
+        composer install --no-dev --optimize-autoloader
+        
+    - name: Create deployment package
+      run: |
+        # Criar diretório temporário para o deploy
+        mkdir -p deploy-package/api
+        mkdir -p deploy-package/dashboard
+        
+        # Copiar arquivos da API
+        cp -r api/* deploy-package/api/
+        
+        # Copiar build do dashboard
+        cp -r dashboard/build/* deploy-package/dashboard/
+        
+        # Criar arquivo de configuração do Nginx
+        cat > deploy-package/nginx.conf << 'EOF'
+        server {
+            listen 80;
+            server_name ${{ secrets.SSH_HOST }};
+            root /public_html/git-board;
+            index index.html index.php;
+
+            # Dashboard React
+            location / {
+                try_files $uri $uri/ /dashboard/index.html;
+                root /public_html/git-board/dashboard;
+            }
+
+            # API PHP
+            location /api/ {
+                alias /public_html/git-board/api/;
+                try_files $uri $uri/ /api/index.php?$query_string;
+                
+                location ~ \.php$ {
+                    fastcgi_pass unix:/var/run/php/php8.1-fpm.sock;
+                    fastcgi_index index.php;
+                    fastcgi_param SCRIPT_FILENAME $request_filename;
+                    include fastcgi_params;
+                }
+            }
+
+            # Arquivos estáticos
+            location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
+                expires 1y;
+                add_header Cache-Control "public, immutable";
+            }
+        }
+        EOF
+        
+        # Criar script de deploy
+        cat > deploy-package/deploy.sh << 'EOF'
+        #!/bin/bash
+        set -e
+        
+        echo "🚀 Iniciando deploy do Git Board..."
+        
+        # Criar diretórios
+        mkdir -p /public_html/git-board/api
+        mkdir -p /public_html/git-board/dashboard
+        
+        # Backup dos arquivos atuais
+        if [ -d "/public_html/git-board/api" ]; then
+            echo "📦 Fazendo backup da API..."
+            cp -r /public_html/git-board/api /public_html/git-board/api.backup.$(date +%Y%m%d_%H%M%S)
+        fi
+        
+        if [ -d "/public_html/git-board/dashboard" ]; then
+            echo "📦 Fazendo backup do Dashboard..."
+            cp -r /public_html/git-board/dashboard /public_html/git-board/dashboard.backup.$(date +%Y%m%d_%H%M%S)
+        fi
+        
+        # Deploy da API
+        echo "🔧 Deployando API..."
+        rm -rf /public_html/git-board/api/*
+        cp -r /tmp/deploy-package/api/* /public_html/git-board/api/
+        
+        # Deploy do Dashboard
+        echo "🎨 Deployando Dashboard..."
+        rm -rf /public_html/git-board/dashboard/*
+        cp -r /tmp/deploy-package/dashboard/* /public_html/git-board/dashboard/
+        
+        # Definir permissões
+        echo "🔐 Configurando permissões..."
+        chmod -R 755 /public_html/git-board/api
+        chmod -R 755 /public_html/git-board/dashboard
+        chown -R www-data:www-data /public_html/git-board/api
+        chown -R www-data:www-data /public_html/git-board/dashboard
+        
+        # Criar diretório de dados se não existir
+        mkdir -p /public_html/git-board/api/data
+        chmod 777 /public_html/git-board/api/data
+        
+        # Configurar Nginx
+        echo "⚙️ Configurando Nginx..."
+        cp /tmp/deploy-package/nginx.conf /etc/nginx/sites-available/git-board
+        ln -sf /etc/nginx/sites-available/git-board /etc/nginx/sites-enabled/
+        nginx -t && systemctl reload nginx
+        
+        # Limpar backups antigos (manter apenas os últimos 5)
+        echo "🧹 Limpando backups antigos..."
+        ls -t /public_html/git-board/api.backup.* 2>/dev/null | tail -n +6 | xargs -r rm -rf
+        ls -t /public_html/git-board/dashboard.backup.* 2>/dev/null | tail -n +6 | xargs -r rm -rf
+        
+        echo "✅ Deploy concluído com sucesso!"
+        echo "🌐 Dashboard: http://${{ secrets.SSH_HOST }}/"
+        echo "🔌 API: http://${{ secrets.SSH_HOST }}/api/"
+        EOF
+        
+        chmod +x deploy-package/deploy.sh
+        
+        # Criar arquivo tar para transferência
+        tar -czf git-board-deploy.tar.gz -C deploy-package .
+        
+    - name: Deploy to server
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        password: ${{ secrets.SSH_PASSWORD }}
+        port: ${{ secrets.SSH_PORT || 22 }}
+        script: |
+          # Criar diretório temporário
+          mkdir -p /tmp/deploy-package
+          
+          # Limpar diretório temporário
+          rm -rf /tmp/deploy-package/*
+          
+    - name: Upload deployment package
+      uses: appleboy/scp-action@v0.1.7
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        password: ${{ secrets.SSH_PASSWORD }}
+        port: ${{ secrets.SSH_PORT || 22 }}
+        source: "git-board-deploy.tar.gz"
+        target: "/tmp/"
+        
+    - name: Extract and deploy
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        password: ${{ secrets.SSH_PASSWORD }}
+        port: ${{ secrets.SSH_PORT || 22 }}
+        script: |
+          # Extrair arquivo de deploy
+          cd /tmp
+          tar -xzf git-board-deploy.tar.gz -C deploy-package
+          
+          # Executar script de deploy
+          /tmp/deploy-package/deploy.sh
+          
+          # Limpar arquivos temporários
+          rm -rf /tmp/deploy-package
+          rm -f /tmp/git-board-deploy.tar.gz
+          
+    - name: Verify deployment
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USER }}
+        password: ${{ secrets.SSH_PASSWORD }}
+        port: ${{ secrets.SSH_PORT || 22 }}
+        script: |
+          echo "🔍 Verificando deployment..."
+          
+          # Verificar se os arquivos foram copiados
+          API_FILES=$(ls -la /public_html/git-board/api/ | wc -l)
+          DASHBOARD_FILES=$(ls -la /public_html/git-board/dashboard/ | wc -l)
+          
+          echo "📊 Arquivos na API: $API_FILES"
+          echo "📊 Arquivos no Dashboard: $DASHBOARD_FILES"
+          
+          # Testar API
+          if curl -s -f "http://localhost/api/repositories" > /dev/null; then
+            echo "✅ API respondendo corretamente!"
+          else
+            echo "⚠️ API pode não estar respondendo"
+          fi
+          
+          # Testar Dashboard
+          if curl -s -f "http://localhost/" > /dev/null; then
+            echo "✅ Dashboard respondendo corretamente!"
+          else
+            echo "⚠️ Dashboard pode não estar respondendo"
+          fi
+          
+          echo "🎉 Verificação concluída!"
+          
+    - name: Notify deployment status
+      if: always()
+      run: |
+        if [ "${{ job.status }}" == "success" ]; then
+          echo "✅ Deploy realizado com sucesso!"
+          echo "🌐 Dashboard: http://${{ secrets.SSH_HOST }}/"
+          echo "🔌 API: http://${{ secrets.SSH_HOST }}/api/"
+        else
+          echo "❌ Deploy falhou!"
+        fi

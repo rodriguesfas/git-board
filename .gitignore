@@ -199,6 +199,21 @@ test-results/
 junit.xml
 
 # ===========================================
+# Deploy e CI/CD
+# ===========================================
+# Arquivos de deploy local
+deploy.env
+deploy.sh
+deploy-incremental.sh
+deploy-package/
+git-board-deploy.tar.gz
+.deploy-changes.log
+
+# Arquivos de configuração de deploy
+deploy-config/
+deploy-scripts/
+
+# ===========================================
 # Outros
 # ===========================================
 # Arquivos de lock específicos do sistema
